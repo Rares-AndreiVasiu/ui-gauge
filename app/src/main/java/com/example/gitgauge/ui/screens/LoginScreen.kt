@@ -125,7 +125,7 @@ fun LoginScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = "Welcome, ${state.user.login}!",
+                                text = "Welcome, ${state.user.login ?: "User"}!",
                                 fontSize = 16.sp,
                                 color = Color(0xFF24292F)
                             )
@@ -150,7 +150,7 @@ fun LoginScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = state.message,
+                                text = state.message ?: "An unknown error occurred",
                                 fontSize = 14.sp,
                                 color = Color(0xFF57606A),
                                 textAlign = TextAlign.Center,

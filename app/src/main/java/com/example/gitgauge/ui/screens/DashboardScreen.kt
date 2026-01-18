@@ -64,7 +64,7 @@ fun DashboardScreen(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Welcome, ${user.login}!",
+                    text = "Welcome, ${user.login ?: "User"}!",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -212,7 +212,7 @@ private fun RepositoryCard(
                 .padding(16.dp)
         ) {
             Text(
-                text = repo.name,
+                text = repo.name ?: "Unnamed Repository",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF0969DA),
@@ -220,7 +220,7 @@ private fun RepositoryCard(
             )
             if (!repo.description.isNullOrEmpty()) {
                 Text(
-                    text = repo.description,
+                    text = repo.description ?: "",
                     fontSize = 13.sp,
                     color = Color(0xFF57606A),
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -233,7 +233,7 @@ private fun RepositoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "⭐ ${repo.starsCount}",
+                    text = "⭐ ${repo.starsCount ?: 0}",
                     fontSize = 12.sp,
                     color = Color(0xFF57606A),
                     fontWeight = FontWeight.SemiBold
