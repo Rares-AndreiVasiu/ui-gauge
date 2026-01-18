@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    @GET("/login")
+    @GET("/login/url")
     suspend fun getLoginUrl(): LoginUrlResponse
 
     @GET("/auth/callback")
@@ -22,11 +22,18 @@ interface ApiService {
         @Header("Authorization") token: String
     ): List<RepositoryItem>
 
+
     companion object {
-        const val BASE_URL = "http://localhost:8000/" // Change to your backend URL
+        const val BASE_URL = "http://gitgauge.reuron.com/"
     }
 }
 
 data class LoginUrlResponse(
-    val loginUrl: String
+    val auth_url: String
 )
+
+data class AccessTokenResponse(
+    val access_token: String
+)
+
+

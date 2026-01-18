@@ -14,11 +14,12 @@ class AuthRepository @Inject constructor(
 ) {
 
     private val apiService: ApiService = NetworkModule.getApiService()
+    private val gitHubApiService: GitHubApiService = NetworkModule.getGitHubApiService()
 
     suspend fun getLoginUrl(): String {
         return try {
             val response = apiService.getLoginUrl()
-            response.loginUrl
+            response.auth_url
         } catch (e: Exception) {
             throw Exception("Failed to get login URL: ${e.message}")
         }
@@ -26,9 +27,17 @@ class AuthRepository @Inject constructor(
 
     suspend fun exchangeCodeForToken(code: String, state: String? = null): Pair<String, GithubUser> {
         return try {
+            // Exchange code for access token
             val response = apiService.exchangeCodeForToken(code, state)
-            tokenManager.saveAccessToken(response.accessToken)
-            Pair(response.accessToken, response.userJson)
+            val token = response.accessToken
+
+            // Save the token
+            tokenManager.saveAccessToken(token)
+
+            // Fetch user data from GitHub API
+            val user = gitHubApiService.getCurrentUser("Bearer $token")
+
+            Pair(token, user)
         } catch (e: Exception) {
             throw Exception("Failed to exchange code for token: ${e.message}")
         }

@@ -1,6 +1,7 @@
 package com.example.gitgauge.di
 
 import com.example.gitgauge.network.ApiService
+import com.example.gitgauge.network.GitHubApiService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -25,7 +26,19 @@ object NetworkModule {
             .build()
     }
 
+    private val githubRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(GitHubApiService.BASE_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
     fun getApiService(): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    fun getGitHubApiService(): GitHubApiService {
+        return githubRetrofit.create(GitHubApiService::class.java)
     }
 }

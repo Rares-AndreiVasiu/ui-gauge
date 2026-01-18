@@ -19,9 +19,7 @@ data class GithubUser(
 
 data class AuthResponse(
     @SerializedName("access_token")
-    val accessToken: String,
-    @SerializedName("user_json")
-    val userJson: GithubUser
+    val accessToken: String
 )
 
 data class RepositoryItem(
@@ -36,3 +34,11 @@ data class RepositoryItem(
     @SerializedName("stargazers_count")
     val starsCount: Int
 )
+
+data class SimpleRepository(
+    @SerializedName("owner")
+    val owner: String,
+    @SerializedName("repo")
+    val repo: String
+)
+
