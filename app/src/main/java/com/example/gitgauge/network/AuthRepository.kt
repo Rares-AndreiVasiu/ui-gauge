@@ -1,10 +1,12 @@
 package com.example.gitgauge.network
 
 import com.example.gitgauge.auth.TokenManager
-import com.example.gitgauge.data.model.AuthResponse
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
 import com.example.gitgauge.di.NetworkModule
+import com.example.gitgauge.network.GitHubApiService
+import kotlinx.coroutines.delay
+import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,8 +16,20 @@ class AuthRepository @Inject constructor(
 ) {
 
     private val apiService: ApiService = NetworkModule.getApiService()
-    private val gitHubApiService: GitHubApiService = NetworkModule.getGitHubApiService()
 
+    suspend fun initiateDeviceFlow(): com.example.gitgauge.network.DeviceFlowResponse {
+        return try {
+            apiService.initiateDeviceFlow()
+        } catch (e: HttpException) {
+            if (e.code() == 404) {
+                throw Exception("Device flow not available. Backend needs to be updated with device flow endpoints.")
+            }
+            throw Exception("Failed to initiate device flow: ${e.message}")
+        } catch (e: Exception) {
+            throw Exception("Failed to initiate device flow: ${e.message}")
+        }
+    }
+    
     suspend fun getLoginUrl(): String {
         return try {
             val response = apiService.getLoginUrl()
@@ -24,22 +38,64 @@ class AuthRepository @Inject constructor(
             throw Exception("Failed to get login URL: ${e.message}")
         }
     }
-
+    
     suspend fun exchangeCodeForToken(code: String, state: String? = null): Pair<String, GithubUser> {
         return try {
-            // Exchange code for access token
-            val response = apiService.exchangeCodeForToken(code, state)
-            val token = response.accessToken
-
-            // Save the token
+            val tokenResponse = apiService.exchangeCodeForToken(code, state)
+            val token = tokenResponse.access_token
+            
             tokenManager.saveAccessToken(token)
-
-            // Fetch user data from GitHub API
+            
+            val gitHubApiService: GitHubApiService = NetworkModule.getGitHubApiService()
             val user = gitHubApiService.getCurrentUser("Bearer $token")
-
+            
             Pair(token, user)
         } catch (e: Exception) {
             throw Exception("Failed to exchange code for token: ${e.message}")
+        }
+    }
+
+    suspend fun pollDeviceFlow(deviceCode: String, intervalSeconds: Int): Pair<String, GithubUser> {
+        while (true) {
+            try {
+                val response = apiService.pollDeviceFlow(deviceCode)
+                
+                when {
+                    response.status == "pending" -> {
+                        delay((intervalSeconds * 1000).toLong())
+                        continue
+                    }
+                    response.status == "slow_down" -> {
+                        delay((intervalSeconds * 1000 * 2).toLong())
+                        continue
+                    }
+                    response.access_token != null && response.user != null -> {
+                        val token = response.access_token
+                        val deviceUser = response.user
+                        
+                        tokenManager.saveAccessToken(token)
+                        
+                        val user = GithubUser(
+                            id = 0,
+                            login = deviceUser.login,
+                            avatarUrl = deviceUser.avatar_url ?: "",
+                            name = deviceUser.name,
+                            bio = null,
+                            publicRepos = 0
+                        )
+                        
+                        return Pair(token, user)
+                    }
+                    else -> {
+                        throw Exception("Unexpected response from device flow")
+                    }
+                }
+            } catch (e: Exception) {
+                if (e.message?.contains("expired") == true) {
+                    throw Exception("Device code expired. Please try again.")
+                }
+                throw Exception("Failed to poll device flow: ${e.message}")
+            }
         }
     }
 

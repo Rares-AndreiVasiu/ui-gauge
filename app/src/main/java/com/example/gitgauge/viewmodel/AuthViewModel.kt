@@ -39,13 +39,13 @@ class AuthViewModel @Inject constructor(
             _authState.value = AuthState.Loading
             try {
                 val loginUrl = authRepository.getLoginUrl()
-                _authState.value = AuthState.ReadyToLogin(loginUrl)
+                _authState.value = AuthState.WebViewLogin(loginUrl)
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Unknown error")
+                _authState.value = AuthState.Error(e.message ?: "Failed to start login")
             }
         }
     }
-
+    
     fun handleAuthCallback(code: String, state: String? = null) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -87,7 +87,7 @@ class AuthViewModel @Inject constructor(
 sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
-    data class ReadyToLogin(val loginUrl: String) : AuthState()
+    data class WebViewLogin(val loginUrl: String) : AuthState()
     data class Success(val user: GithubUser) : AuthState()
     data class Error(val message: String) : AuthState()
 }
