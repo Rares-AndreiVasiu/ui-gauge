@@ -3,6 +3,7 @@ package com.example.gitgauge.network
 import com.example.gitgauge.auth.TokenManager
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
+import com.example.gitgauge.data.repository.AnalysisCacheRepository
 import com.example.gitgauge.di.NetworkModule
 import com.example.gitgauge.network.GitHubApiService
 import kotlinx.coroutines.delay
@@ -12,7 +13,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepository @Inject constructor(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val cacheRepository: AnalysisCacheRepository
 ) {
 
     private val apiService: ApiService = NetworkModule.getApiService()
@@ -106,6 +108,37 @@ class AuthRepository @Inject constructor(
             apiService.listRepositories("Bearer $token")
         } catch (e: Exception) {
             throw Exception("Failed to list repositories: ${e.message}")
+        }
+    }
+
+    suspend fun analyzeRepository(
+        owner: String,
+        repo: String,
+        ref: String = "main"
+    ): com.example.gitgauge.data.model.AnalysisResponse {
+        return try {
+            // Check cache first
+            val cachedAnalysis = cacheRepository.getAnalysis(owner, repo, ref)
+            if (cachedAnalysis != null) {
+                return cachedAnalysis
+            }
+
+            // If not in cache, make API call
+            val token = tokenManager.getAccessToken()
+                ?: throw Exception("No access token available")
+            val request = com.example.gitgauge.network.AnalyzeRepositoryRequest(
+                owner = owner,
+                repo = repo,
+                ref = ref
+            )
+            val response = apiService.analyzeRepository("Bearer $token", owner, repo, request)
+
+            // Save to cache
+            cacheRepository.saveAnalysis(owner, repo, ref, response)
+
+            response
+        } catch (e: Exception) {
+            throw Exception("Failed to analyze repository: ${e.message}")
         }
     }
 

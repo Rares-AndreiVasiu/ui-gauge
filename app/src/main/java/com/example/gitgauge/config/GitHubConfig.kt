@@ -1,8 +1,6 @@
 package com.example.gitgauge.config
 
 object GitHubConfig {
-    // Replace with your actual GitHub OAuth App Client ID
-    const val CLIENT_ID = "Ov23liKb5F3H7o9P4kY6"
 
     // The redirect URI must match what you configured in GitHub OAuth App settings
     const val REDIRECT_URI = "gitgauge://oauth-callback"

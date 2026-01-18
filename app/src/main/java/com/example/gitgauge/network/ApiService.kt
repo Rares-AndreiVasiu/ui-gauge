@@ -1,5 +1,6 @@
 package com.example.gitgauge.network
 
+import com.example.gitgauge.data.model.AnalysisResponse
 import com.example.gitgauge.data.model.RepositoryItem
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -31,6 +32,13 @@ interface ApiService {
         @Header("Authorization") token: String
     ): List<RepositoryItem>
 
+    @POST("/repos/{owner}/{repo}/analyze")
+    suspend fun analyzeRepository(
+        @Header("Authorization") token: String,
+        @retrofit2.http.Path("owner") owner: String,
+        @retrofit2.http.Path("repo") repo: String,
+        @Body request: AnalyzeRepositoryRequest
+    ): AnalysisResponse
 
     companion object {
         const val BASE_URL = "http://gitgauge.reuron.com/"
@@ -64,6 +72,13 @@ data class LoginUrlResponse(
 
 data class AuthResponse(
     val access_token: String
+)
+
+data class AnalyzeRepositoryRequest(
+    val owner: String,
+    val repo: String,
+    val ref: String = "main",
+    val contents: List<String> = emptyList()
 )
 
 

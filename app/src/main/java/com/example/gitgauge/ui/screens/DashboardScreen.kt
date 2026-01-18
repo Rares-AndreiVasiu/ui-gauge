@@ -1,7 +1,5 @@
 package com.example.gitgauge.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +27,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,10 +39,10 @@ fun DashboardScreen(
     viewModel: AuthViewModel,
     user: GithubUser,
     onLogout: () -> Unit,
+    onRepositoryClick: (owner: String, repo: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val repositories = viewModel.repositories.collectAsState()
-    val context = LocalContext.current
 
     Column(
         modifier = modifier
@@ -139,8 +136,8 @@ fun DashboardScreen(
                     RepositoryCard(
                         repo = repo,
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(repo.htmlUrl))
-                            context.startActivity(intent)
+                            // Navigate to analysis screen instead of GitHub
+                            onRepositoryClick(user.login, repo.name)
                         }
                     )
                 }

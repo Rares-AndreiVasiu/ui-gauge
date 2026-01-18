@@ -8,17 +8,24 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.example.gitgauge.ui.screens.AnalysisScreen
 import com.example.gitgauge.ui.screens.DashboardScreen
 import com.example.gitgauge.ui.screens.LoginScreen
 import com.example.gitgauge.ui.theme.GitgaugeTheme
+import com.example.gitgauge.viewmodel.AnalysisViewModel
 import com.example.gitgauge.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.material3.Scaffold
 
 @AndroidEntryPoint
+@Suppress("UnusedMaterial3ScaffoldPaddingParameter")
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
+    private val analysisViewModel: AnalysisViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,18 +34,39 @@ class MainActivity : ComponentActivity() {
             GitgaugeTheme {
                 val isLoggedIn = authViewModel.isLoggedIn.collectAsState()
                 val authState = authViewModel.authState.collectAsState()
+                val currentScreen = remember { mutableStateOf<Screen>(Screen.Dashboard) }
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(modifier = Modifier.fillMaxSize()) {
                     if (isLoggedIn.value && authState.value is com.example.gitgauge.viewmodel.AuthState.Success) {
                         val successState = authState.value as com.example.gitgauge.viewmodel.AuthState.Success
-                        DashboardScreen(
-                            viewModel = authViewModel,
-                            user = successState.user,
-                            onLogout = {
-                                authViewModel.logout()
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
+
+                        when (val screen = currentScreen.value) {
+                            is Screen.Dashboard -> {
+                                DashboardScreen(
+                                    viewModel = authViewModel,
+                                    user = successState.user,
+                                    onLogout = {
+                                        authViewModel.logout()
+                                    },
+                                    onRepositoryClick = { owner, repo ->
+                                        currentScreen.value = Screen.Analysis(owner, repo)
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            is Screen.Analysis -> {
+                                AnalysisScreen(
+                                    viewModel = analysisViewModel,
+                                    owner = screen.owner,
+                                    repo = screen.repo,
+                                    onBackClick = {
+                                        currentScreen.value = Screen.Dashboard
+                                        analysisViewModel.resetState()
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
                     } else {
                         LoginScreen(
                             viewModel = authViewModel,
@@ -49,4 +77,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+sealed class Screen {
+    object Dashboard : Screen()
+    data class Analysis(val owner: String, val repo: String) : Screen()
 }
