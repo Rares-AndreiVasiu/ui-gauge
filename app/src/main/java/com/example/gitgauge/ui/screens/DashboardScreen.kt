@@ -1,11 +1,14 @@
 package com.example.gitgauge.ui.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +22,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,8 +43,9 @@ fun DashboardScreen(
     viewModel: AuthViewModel,
     user: GithubUser,
     onLogout: () -> Unit,
+    modifier: Modifier = Modifier,
     onRepositoryClick: (owner: String, repo: String) -> Unit = { _, _ -> },
-    modifier: Modifier = Modifier
+    onSettingsClick: () -> Unit = {}
 ) {
     val repositories = viewModel.repositories.collectAsState()
 
@@ -48,6 +54,47 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(Color(0xFF13203b))
     ) {
+        // Top Navigation Bar with Logout and Settings
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0f1621))
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Settings Button
+            IconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.padding(end = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = Color(0xFFf06bc7),
+                    modifier = Modifier
+                )
+            }
+
+            // Logout Button
+            Button(
+                onClick = onLogout,
+                modifier = Modifier
+                    .height(40.dp)
+                    .padding(end = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFDC3545)
+                )
+            ) {
+                Text(
+                    text = "Logout",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
         // Header
         Box(
             modifier = Modifier
@@ -143,24 +190,7 @@ fun DashboardScreen(
             }
         }
 
-        // Logout Button
-        Button(
-            onClick = onLogout,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFDC3545)
-            )
-        ) {
-            Text(
-                text = "Logout",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 

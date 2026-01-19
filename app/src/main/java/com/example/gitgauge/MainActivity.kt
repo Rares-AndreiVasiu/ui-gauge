@@ -14,11 +14,11 @@ import androidx.compose.ui.Modifier
 import com.example.gitgauge.ui.screens.AnalysisScreen
 import com.example.gitgauge.ui.screens.DashboardScreen
 import com.example.gitgauge.ui.screens.LoginScreen
+import com.example.gitgauge.ui.screens.SettingsScreen
 import com.example.gitgauge.ui.theme.GitgaugeTheme
 import com.example.gitgauge.viewmodel.AnalysisViewModel
 import com.example.gitgauge.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.compose.material3.Scaffold
 
 @AndroidEntryPoint
 @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
@@ -48,8 +48,23 @@ class MainActivity : ComponentActivity() {
                                     onLogout = {
                                         authViewModel.logout()
                                     },
+                                    modifier = Modifier.fillMaxSize(),
                                     onRepositoryClick = { owner, repo ->
                                         currentScreen.value = Screen.Analysis(owner, repo)
+                                    },
+                                    onSettingsClick = {
+                                        currentScreen.value = Screen.Settings
+                                    }
+                                )
+                            }
+                            is Screen.Settings -> {
+                                SettingsScreen(
+                                    username = successState.user.login ?: "User",
+                                    onBackClick = {
+                                        currentScreen.value = Screen.Dashboard
+                                    },
+                                    onLogout = {
+                                        authViewModel.logout()
                                     },
                                     modifier = Modifier.fillMaxSize()
                                 )
@@ -81,5 +96,6 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen {
     object Dashboard : Screen()
+    object Settings : Screen()
     data class Analysis(val owner: String, val repo: String) : Screen()
 }
