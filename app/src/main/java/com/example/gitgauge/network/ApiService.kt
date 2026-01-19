@@ -41,7 +41,7 @@ interface ApiService {
     ): AnalysisResponse
 
     companion object {
-        const val BASE_URL = "http://gitgauge.reuron.com/"
+        const val BASE_URL = "https://gitgauge.reuron.com/"
     }
 }
 
