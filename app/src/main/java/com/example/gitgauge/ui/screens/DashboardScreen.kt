@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
+import com.example.gitgauge.ui.components.GradientText
 import com.example.gitgauge.viewmodel.AuthViewModel
 
 @Composable
@@ -47,13 +46,13 @@ fun DashboardScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8FA))
+            .background(Color(0xFF13203b))
     ) {
         // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF24292F))
+                .background(Color(0xFF0f1621))
                 .padding(16.dp)
         ) {
             Column(
@@ -70,7 +69,7 @@ fun DashboardScreen(
                 Text(
                     text = user.name ?: "GitHub User",
                     fontSize = 14.sp,
-                    color = Color(0xFFBFC4CB)
+                    color = Color.White
                 )
             }
         }
@@ -80,7 +79,7 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
@@ -88,8 +87,8 @@ fun DashboardScreen(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                UserInfoRow("Repositories", user.publicRepos.toString())
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                UserInfoRow("My public repositories", user.publicRepos.toString())
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2a4068))
                 UserInfoRow("Bio", user.bio ?: "No bio")
             }
         }
@@ -99,7 +98,7 @@ fun DashboardScreen(
             text = "Public Repositories (${repositories.value.size})",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF24292F),
+            color = Color.White,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         )
 
@@ -115,12 +114,12 @@ fun DashboardScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(
-                        color = Color(0xFF24292F),
+                        color = Color(0xFFf06bc7),
                         modifier = Modifier.padding(32.dp)
                     )
                     Text(
                         text = "Loading repositories...",
-                        color = Color(0xFF57606A),
+                        color = Color.White,
                         fontSize = 14.sp
                     )
                 }
@@ -170,20 +169,20 @@ private fun UserInfoRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        GradientText(
             text = label,
-            fontSize = 14.sp,
-            color = Color(0xFF57606A),
-            fontWeight = FontWeight.SemiBold
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff))
         )
         Text(
             text = value,
             fontSize = 14.sp,
-            color = Color(0xFF24292F),
+            color = Color.White,
             fontWeight = FontWeight.Bold
         )
     }
@@ -199,7 +198,7 @@ private fun RepositoryCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -208,18 +207,18 @@ private fun RepositoryCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
+            GradientText(
                 text = repo.name ?: "Unnamed Repository",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0969DA),
+                colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff)),
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             if (!repo.description.isNullOrEmpty()) {
                 Text(
                     text = repo.description ?: "",
                     fontSize = 13.sp,
-                    color = Color(0xFF57606A),
+                    color = Color.White,
                     modifier = Modifier.padding(bottom = 8.dp),
                     maxLines = 2
                 )
@@ -232,13 +231,13 @@ private fun RepositoryCard(
                 Text(
                     text = "⭐ ${repo.starsCount ?: 0}",
                     fontSize = 12.sp,
-                    color = Color(0xFF57606A),
+                    color = Color.White,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "View on GitHub",
+                    text = "View Repository",
                     fontSize = 12.sp,
-                    color = Color(0xFF0969DA),
+                    color = Color(0xFFf06bc7),
                     fontWeight = FontWeight.Bold
                 )
             }

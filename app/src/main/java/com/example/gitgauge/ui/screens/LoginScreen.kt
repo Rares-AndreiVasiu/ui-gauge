@@ -26,6 +26,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.shadow
+import com.example.gitgauge.ui.components.AnimatedGradientText
 import com.example.gitgauge.viewmodel.AuthState
 import com.example.gitgauge.viewmodel.AuthViewModel
 
@@ -70,7 +75,7 @@ fun LoginScreen(
             Box(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF6F8FA)),
+                    .background(Color(0xFF13203b)),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -80,18 +85,19 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "Gitgauge",
-                        fontSize = 36.sp,
+                    AnimatedGradientText(
+                        text = "GitGauge",
+                        fontSize = 50.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF24292F),
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff)),
+                        modifier = Modifier.padding(bottom = 12.dp),
+                        showUnderlineAnimation = true
                     )
 
                     Text(
                         text = "GitHub Repository Insights",
                         fontSize = 16.sp,
-                        color = Color(0xFF57606A),
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(bottom = 32.dp)
                     )
@@ -106,17 +112,18 @@ fun LoginScreen(
 
                         is AuthState.Loading -> {
                             CircularProgressIndicator(
-                                color = Color(0xFF24292F),
+                                color = Color(0xFFf06bc7),
                                 modifier = Modifier.padding(32.dp)
                             )
                             Text(
                                 text = "Preparing login...",
-                                color = Color(0xFF57606A),
+                                color = Color.White,
                                 fontSize = 14.sp
                             )
                         }
 
                         is AuthState.Success -> {
+                            val successState = state as AuthState.Success
                             Text(
                                 text = "✓ Connected Successfully!",
                                 fontSize = 18.sp,
@@ -125,23 +132,24 @@ fun LoginScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = "Welcome, ${state.user.login ?: "User"}!",
+                                text = "Welcome, ${successState.user.login}!",
                                 fontSize = 16.sp,
-                                color = Color(0xFF24292F)
+                                color = Color.White
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             CircularProgressIndicator(
-                                color = Color(0xFF24292F)
+                                color = Color(0xFFf06bc7)
                             )
                             Text(
                                 text = "Loading repositories...",
                                 fontSize = 14.sp,
-                                color = Color(0xFF57606A),
+                                color = Color.White,
                                 modifier = Modifier.padding(top = 16.dp)
                             )
                         }
 
                         is AuthState.Error -> {
+                            val errorState = state as AuthState.Error
                             Text(
                                 text = "Authentication Error",
                                 fontSize = 16.sp,
@@ -150,9 +158,9 @@ fun LoginScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = state.message ?: "An unknown error occurred",
+                                text = errorState.message,
                                 fontSize = 14.sp,
-                                color = Color(0xFF57606A),
+                                color = Color.White,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.padding(bottom = 24.dp)
                             )
@@ -177,12 +185,22 @@ private fun LoginButton(
     modifier: Modifier = Modifier,
     text: String = "Login with GitHub"
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     Button(
         onClick = onClick,
-        modifier = modifier.height(48.dp),
+        modifier = modifier
+            .height(48.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(8.dp),
+                clip = false
+            ),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF24292F)
-        )
+            containerColor = Color(0xFFfb5fb3)
+        ),
+        shape = RoundedCornerShape(8.dp),
+        interactionSource = interactionSource
     ) {
         Text(
             text = text,

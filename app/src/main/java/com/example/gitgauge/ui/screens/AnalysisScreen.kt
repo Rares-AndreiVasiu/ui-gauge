@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gitgauge.data.model.AnalysisResponse
 import com.example.gitgauge.viewmodel.AnalysisState
 import com.example.gitgauge.viewmodel.AnalysisViewModel
-
+import com.example.gitgauge.ui.components.MarkdownText
 @Composable
 fun AnalysisScreen(
     viewModel: AnalysisViewModel,
@@ -57,13 +57,13 @@ fun AnalysisScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8FA))
+            .background(Color(0xFF13203b))
     ) {
         // Header with back button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF24292F))
+                .background(Color(0xFF0f1621))
                 .padding(horizontal = 8.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -88,7 +88,7 @@ fun AnalysisScreen(
                 Text(
                     text = "Repository Analysis",
                     fontSize = 12.sp,
-                    color = Color(0xFFBFC4CB)
+                    color = Color.White
                 )
             }
         }
@@ -107,13 +107,13 @@ fun AnalysisScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         CircularProgressIndicator(
-                            color = Color(0xFF24292F),
+                            color = Color(0xFFf06bc7),
                             modifier = Modifier.padding(16.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Analyzing repository...",
-                            color = Color(0xFF57606A),
+                            color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -148,7 +148,7 @@ fun AnalysisScreen(
                         )
                         Text(
                             text = (analysisState.value as AnalysisState.Error).message,
-                            color = Color(0xFF57606A),
+                            color = Color.White,
                             fontSize = 14.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
@@ -156,7 +156,7 @@ fun AnalysisScreen(
                         Button(
                             onClick = { viewModel.analyzeRepository(owner, repo, ref) },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF0969DA)
+                                containerColor = Color(0xFFf06bc7)
                             )
                         ) {
                             Text("Retry", color = Color.White)
@@ -172,7 +172,7 @@ fun AnalysisScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Idle", color = Color(0xFF57606A))
+                    Text("Idle", color = Color.White)
                 }
             }
         }
@@ -194,7 +194,7 @@ private fun AnalysisContent(
         // Summary Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -207,13 +207,13 @@ private fun AnalysisContent(
                     text = "Summary",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF24292F),
+                    color = Color.White,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 Text(
                     text = response.summary,
                     fontSize = 14.sp,
-                    color = Color(0xFF57606A),
+                    color = Color.White,
                     lineHeight = 1.5.em
                 )
             }
@@ -222,7 +222,7 @@ private fun AnalysisContent(
         // Repository Info Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -235,7 +235,7 @@ private fun AnalysisContent(
                     text = "Repository Information",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF24292F),
+                    color = Color.White,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 InfoRow("Owner", response.repository.owner)
@@ -245,10 +245,10 @@ private fun AnalysisContent(
             }
         }
 
-        // Full Analysis Card
+        // Full Analysis Card with Markdown rendering
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF6F8FA)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -261,22 +261,12 @@ private fun AnalysisContent(
                     text = "Detailed Analysis",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF24292F),
+                    color = Color.White,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                Text(
+                MarkdownText(
                     text = response.analysis,
-                    fontSize = 12.sp,
-                    color = Color(0xFF57606A),
-                    fontFamily = FontFamily.Monospace,
-                    lineHeight = 1.6.em,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                        .padding(12.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -295,20 +285,20 @@ private fun InfoRow(label: String, value: String) {
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color(0xFF57606A),
+            color = Color.White,
             fontWeight = FontWeight.SemiBold
         )
         Text(
             text = value,
             fontSize = 14.sp,
-            color = Color(0xFF24292F),
+            color = Color.White,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 4.dp)
         )
         if (label != "Files Analyzed") {
             HorizontalDivider(
                 modifier = Modifier.padding(top = 8.dp),
-                color = Color(0xFFEAECEF),
+                color = Color(0xFF2a4068),
                 thickness = 1.dp
             )
         }

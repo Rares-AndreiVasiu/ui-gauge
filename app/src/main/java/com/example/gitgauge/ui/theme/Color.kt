@@ -2,10 +2,21 @@ package com.example.gitgauge.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Background color
+val DarkBackground = Color(0xFF13203b)
 
-val Purple40 = Color(0xFF6650a4)
+// Gradient colors
+val GradientPink = Color(0xFFf06bc7)
+val GradientPurple = Color(0xFFc67aff)
+
+// Text colors
+val WhiteText = Color.White
+
+// Legacy colors (kept for compatibility)
+val Purple80 = GradientPurple
+val PurpleGrey80 = Color(0xFFCCC2DC)
+val Pink80 = GradientPink
+
+val Purple40 = GradientPurple
 val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Pink40 = GradientPink
