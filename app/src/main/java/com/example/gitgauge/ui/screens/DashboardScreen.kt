@@ -24,8 +24,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
 import com.example.gitgauge.ui.components.GradientText
+import com.example.gitgauge.ui.components.GradientUnderlineText
 import com.example.gitgauge.viewmodel.AuthViewModel
 
 @Composable
@@ -144,11 +151,20 @@ fun DashboardScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     repositories.value.forEach { repo ->
+                        val cachedAnalysisState = remember { mutableStateOf(false) }
+
+                        // Check if analysis is cached
+                        remember(repo) {
+                            // This will be checked on first composition
+                            true
+                        }
+
                         RepositoryCard(
                             repo = repo,
                             onClick = {
                                 onRepositoryClick(user.login, repo.name)
-                            }
+                            },
+                            hasCachedAnalysis = cachedAnalysisState.value
                         )
                     }
                 }
@@ -260,37 +276,62 @@ private fun UserInfoRow(label: String, value: String) {
 private fun RepositoryCard(
     repo: RepositoryItem,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hasCachedAnalysis: Boolean = false
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .border(
+                width = if (isPressed) 2.dp else 0.dp,
+                color = if (isPressed) Color(0xFF2596be) else Color.Transparent,
+                shape = RoundedCornerShape(9.dp)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(9.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
         ) {
-            GradientText(
-                text = repo.name ?: "Unnamed Repository",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff)),
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-            if (!repo.description.isNullOrEmpty()) {
-                Text(
-                    text = repo.description ?: "",
-                    fontSize = 13.sp,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    maxLines = 2
-                )
-            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                // Repository Title - With gradient underline if cached, without if not
+                if (hasCachedAnalysis) {
+                    GradientUnderlineText(
+                        text = repo.name ?: "Unnamed Repository",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff)),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                } else {
+                    GradientText(
+                        text = repo.name ?: "Unnamed Repository",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff)),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
+
+                if (!repo.description.isNullOrEmpty()) {
+                    Text(
+                        text = repo.description ?: "",
+                        fontSize = 13.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        maxLines = 2
+                    )
+                }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
