@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,12 +23,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,9 +47,7 @@ fun DashboardScreen(
     onSettingsClick: () -> Unit = {}
 ) {
     val repositories = viewModel.repositories.collectAsState()
-    val showBottomNav = remember { mutableStateOf(true) }
     val scrollState = rememberScrollState()
-    val previousScrollPosition = remember { mutableStateOf(0) }
 
     Column(
         modifier = modifier
@@ -68,34 +61,7 @@ fun DashboardScreen(
                 .verticalScroll(scrollState)
                 .fillMaxWidth()
         ) {
-            // Header - Will be hidden on scroll up
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF0f1621))
-                    .padding(16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = "Welcome, ${user.login ?: "User"}!",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = user.name ?: "GitHub User",
-                        fontSize = 14.sp,
-                        color = Color.White
-                    )
-                }
-            }
-
-            // User Info Card
+            // User Info Card - Merged with Welcome Header
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,8 +74,33 @@ fun DashboardScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    // Username Title - Gradient, Bold, 30sp
+                    GradientText(
+                        text = user.login ?: "User",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        colors = listOf(Color(0xFFf06bc7), Color(0xFFc67aff)),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    // User Full Name
+                    Text(
+                        text = user.name ?: "GitHub User",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Divider
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFF2a4068))
+
+                    // Public Repositories Row
                     UserInfoRow("My public repositories", user.publicRepos.toString())
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2a4068))
+
+                    // Divider
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFF2a4068))
+
+                    // Bio Row
                     UserInfoRow("Bio", user.bio ?: "No bio")
                 }
             }
