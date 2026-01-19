@@ -200,7 +200,7 @@ private fun RepositoryCard(
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(9.dp)
     ) {
         Column(
             modifier = Modifier
