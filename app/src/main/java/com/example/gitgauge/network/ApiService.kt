@@ -37,7 +37,8 @@ interface ApiService {
         @Header("Authorization") token: String,
         @retrofit2.http.Path("owner") owner: String,
         @retrofit2.http.Path("repo") repo: String,
-        @Body request: AnalyzeRepositoryRequest
+        @Body request: AnalyzeRepositoryRequest,
+        @Query("force_reanalysis") forceReanalysis: Boolean = false
     ): AnalysisResponse
 
     companion object {

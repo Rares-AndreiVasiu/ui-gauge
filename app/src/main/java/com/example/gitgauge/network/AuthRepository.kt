@@ -1,5 +1,6 @@
 package com.example.gitgauge.network
 
+import com.example.gitgauge.auth.SessionManager
 import com.example.gitgauge.auth.TokenManager
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
@@ -14,7 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val tokenManager: TokenManager,
-    private val cacheRepository: AnalysisCacheRepository
+    private val cacheRepository: AnalysisCacheRepository,
+    private val sessionManager: SessionManager
 ) {
 
     private val apiService: ApiService = NetworkModule.getApiService()
@@ -51,6 +53,9 @@ class AuthRepository @Inject constructor(
             val gitHubApiService: GitHubApiService = NetworkModule.getGitHubApiService()
             val user = gitHubApiService.getCurrentUser("Bearer $token")
             
+            // Persist session for offline use
+            sessionManager.createSession(user, token)
+
             Pair(token, user)
         } catch (e: Exception) {
             throw Exception("Failed to exchange code for token: ${e.message}")
@@ -114,16 +119,19 @@ class AuthRepository @Inject constructor(
     suspend fun analyzeRepository(
         owner: String,
         repo: String,
-        ref: String = "main"
+        ref: String = "main",
+        forceReanalysis: Boolean = false
     ): com.example.gitgauge.data.model.AnalysisResponse {
         return try {
-            // Check cache first
-            val cachedAnalysis = cacheRepository.getAnalysis(owner, repo, ref)
-            if (cachedAnalysis != null) {
-                return cachedAnalysis
+            // Check cache first if force reanalysis is disabled
+            if (!forceReanalysis) {
+                val cachedAnalysis = cacheRepository.getAnalysis(owner, repo, ref)
+                if (cachedAnalysis != null) {
+                    return cachedAnalysis
+                }
             }
 
-            // If not in cache, make API call
+            // If not in cache or force reanalysis is enabled, make API call
             val token = tokenManager.getAccessToken()
                 ?: throw Exception("No access token available")
             val request = com.example.gitgauge.network.AnalyzeRepositoryRequest(
@@ -131,13 +139,21 @@ class AuthRepository @Inject constructor(
                 repo = repo,
                 ref = ref
             )
-            val response = apiService.analyzeRepository("Bearer $token", owner, repo, request)
+            val response = apiService.analyzeRepository("Bearer $token", owner, repo, request, forceReanalysis)
 
             // Save to cache
             cacheRepository.saveAnalysis(owner, repo, ref, response)
 
             response
         } catch (e: Exception) {
+            // If API call fails, try to get cached result as fallback for offline support
+            val cachedAnalysis = cacheRepository.getAnalysis(owner, repo, ref)
+            if (cachedAnalysis != null) {
+                // Return cached result even if not explicitly requested
+                return cachedAnalysis
+            }
+
+            // If no cache available, throw the original error
             throw Exception("Failed to analyze repository: ${e.message}")
         }
     }
@@ -148,6 +164,23 @@ class AuthRepository @Inject constructor(
 
     fun clearToken() {
         tokenManager.clearAccessToken()
+    }
+
+    suspend fun logout() {
+        // Clear both token and session
+        sessionManager.logout()
+    }
+
+    suspend fun restoreSessionFromStorage(): Pair<String, GithubUser>? {
+        return sessionManager.restoreSession()
+    }
+
+    suspend fun hasValidOfflineSession(): Boolean {
+        return sessionManager.hasValidSession()
+    }
+
+    suspend fun getStoredUserProfile(): GithubUser? {
+        return sessionManager.getStoredUser()
     }
 
     fun isLoggedIn(): Boolean {
