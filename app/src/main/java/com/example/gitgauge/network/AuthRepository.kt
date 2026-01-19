@@ -5,6 +5,7 @@ import com.example.gitgauge.auth.TokenManager
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
 import com.example.gitgauge.data.repository.AnalysisCacheRepository
+import com.example.gitgauge.data.repository.RepositoryCacheRepository
 import com.example.gitgauge.di.NetworkModule
 import com.example.gitgauge.network.GitHubApiService
 import kotlinx.coroutines.delay
@@ -16,6 +17,7 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val tokenManager: TokenManager,
     private val cacheRepository: AnalysisCacheRepository,
+    private val repositoryCacheRepository: RepositoryCacheRepository,
     private val sessionManager: SessionManager
 ) {
 
@@ -107,11 +109,28 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun listRepositories(): List<RepositoryItem> {
+        // First, get cached repositories as fallback
+        val cachedRepos = repositoryCacheRepository.getCachedRepositories()
+        
         return try {
             val token = tokenManager.getAccessToken()
                 ?: throw Exception("No access token available")
-            apiService.listRepositories("Bearer $token")
+            
+            // Try to fetch fresh data from API
+            val freshRepos = apiService.listRepositories("Bearer $token")
+            
+            // Save fresh data to cache
+            repositoryCacheRepository.saveRepositories(freshRepos)
+            
+            // Return fresh data
+            freshRepos
         } catch (e: Exception) {
+            // If API call fails, return cached repos if available (offline support)
+            if (cachedRepos.isNotEmpty()) {
+                return cachedRepos
+            }
+            
+            // If no cache available, throw the error
             throw Exception("Failed to list repositories: ${e.message}")
         }
     }
@@ -185,5 +204,9 @@ class AuthRepository @Inject constructor(
 
     fun isLoggedIn(): Boolean {
         return tokenManager.isTokenAvailable()
+    }
+
+    suspend fun getCachedRepositories(): List<RepositoryItem> {
+        return repositoryCacheRepository.getCachedRepositories()
     }
 }
