@@ -15,22 +15,30 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gitgauge.viewmodel.AuthViewModel
 
 @Composable
 fun SettingsScreen(
+    viewModel: AuthViewModel,
     username: String,
     onBackClick: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val forceReanalysis by viewModel.forceReanalysis.collectAsState()
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -65,13 +73,13 @@ fun SettingsScreen(
         // Content
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .padding(16.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopCenter
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -89,23 +97,63 @@ fun SettingsScreen(
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
 
-                // Logout Button
-                Button(
-                    onClick = onLogout,
+                // Analysis Refresh Setting
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFDC3545)
-                    )
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Logout",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                    Column {
+                        Text(
+                            text = "Force Analysis Refresh",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Re-analyze repositories even if cached",
+                            fontSize = 12.sp,
+                            color = Color(0xFFb0b8c1),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                    Switch(
+                        checked = forceReanalysis,
+                        onCheckedChange = { viewModel.toggleForceReanalysis() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFFf06bc7),
+                            checkedTrackColor = Color(0xFFc67aff),
+                            uncheckedThumbColor = Color(0xFF6b7280),
+                            uncheckedTrackColor = Color(0xFF374151)
+                        )
                     )
                 }
+            }
+        }
+
+        // Logout Button at the bottom
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Button(
+                onClick = onLogout,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFDC3545)
+                )
+            ) {
+                Text(
+                    text = "Logout",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

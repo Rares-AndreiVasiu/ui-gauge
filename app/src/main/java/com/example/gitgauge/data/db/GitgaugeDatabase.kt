@@ -5,10 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [AnalysisCacheEntity::class], version = 1)
+@Database(entities = [AnalysisCacheEntity::class, UserSessionEntity::class], version = 2)
 abstract class GitgaugeDatabase : RoomDatabase() {
 
     abstract fun analysisCacheDao(): AnalysisCacheDao
+    abstract fun userSessionDao(): UserSessionDao
 
     companion object {
         @Volatile
@@ -20,7 +21,9 @@ abstract class GitgaugeDatabase : RoomDatabase() {
                     context.applicationContext,
                     GitgaugeDatabase::class.java,
                     "gitgauge_database"
-                ).build().also { instance = it }
+                )
+                .fallbackToDestructiveMigration()
+                .build().also { instance = it }
             }
         }
     }

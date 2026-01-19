@@ -22,13 +22,13 @@ class AnalysisViewModel @Inject constructor(
     private val _analysisResponse = MutableStateFlow<AnalysisResponse?>(null)
     val analysisResponse: StateFlow<AnalysisResponse?> = _analysisResponse.asStateFlow()
 
-    fun analyzeRepository(owner: String, repo: String, ref: String = "main") {
+    fun analyzeRepository(owner: String, repo: String, ref: String = "main", forceReanalysis: Boolean = false) {
         viewModelScope.launch {
             _analysisState.value = AnalysisState.Loading
             try {
-                val response = authRepository.analyzeRepository(owner, repo, ref)
+                val response = authRepository.analyzeRepository(owner, repo, ref, forceReanalysis)
                 _analysisResponse.value = response
-                _analysisState.value = AnalysisState.Success(response)
+                _analysisState.value = AnalysisState.Success(response, isOfflineCache = false)
             } catch (e: Exception) {
                 _analysisState.value = AnalysisState.Error(e.message ?: "Failed to analyze repository")
             }
@@ -44,6 +44,6 @@ class AnalysisViewModel @Inject constructor(
 sealed class AnalysisState {
     object Idle : AnalysisState()
     object Loading : AnalysisState()
-    data class Success(val response: AnalysisResponse) : AnalysisState()
+    data class Success(val response: AnalysisResponse, val isOfflineCache: Boolean = false) : AnalysisState()
     data class Error(val message: String) : AnalysisState()
 }

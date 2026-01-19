@@ -50,15 +50,25 @@ class MainActivity : ComponentActivity() {
                                     },
                                     modifier = Modifier.fillMaxSize(),
                                     onRepositoryClick = { owner, repo ->
-                                        currentScreen.value = Screen.Analysis(owner, repo)
+                                        currentScreen.value = Screen.Analysis(owner, repo, forceReanalysis = false)
                                     },
                                     onSettingsClick = {
                                         currentScreen.value = Screen.Settings
+                                    },
+                                    onRefreshRepository = { owner, repo ->
+                                        analysisViewModel.analyzeRepository(
+                                            owner = owner,
+                                            repo = repo,
+                                            ref = "main",
+                                            forceReanalysis = true
+                                        )
+                                        currentScreen.value = Screen.Analysis(owner, repo, forceReanalysis = true)
                                     }
                                 )
                             }
                             is Screen.Settings -> {
                                 SettingsScreen(
+                                    viewModel = authViewModel,
                                     username = successState.user.login ?: "User",
                                     onBackClick = {
                                         currentScreen.value = Screen.Dashboard
@@ -74,6 +84,7 @@ class MainActivity : ComponentActivity() {
                                     viewModel = analysisViewModel,
                                     owner = screen.owner,
                                     repo = screen.repo,
+                                    forceReanalysis = screen.forceReanalysis,
                                     onBackClick = {
                                         currentScreen.value = Screen.Dashboard
                                         analysisViewModel.resetState()
@@ -97,5 +108,5 @@ class MainActivity : ComponentActivity() {
 sealed class Screen {
     object Dashboard : Screen()
     object Settings : Screen()
-    data class Analysis(val owner: String, val repo: String) : Screen()
+    data class Analysis(val owner: String, val repo: String, val forceReanalysis: Boolean = false) : Screen()
 }

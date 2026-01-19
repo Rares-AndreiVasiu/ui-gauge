@@ -46,12 +46,13 @@ fun AnalysisScreen(
     repo: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    ref: String = "main"
+    ref: String = "main",
+    forceReanalysis: Boolean = false
 ) {
     val analysisState = viewModel.analysisState.collectAsState()
 
     LaunchedEffect(owner, repo) {
-        viewModel.analyzeRepository(owner, repo, ref)
+        viewModel.analyzeRepository(owner, repo, ref, forceReanalysis)
     }
 
     Column(
@@ -122,10 +123,35 @@ fun AnalysisScreen(
             }
 
             is AnalysisState.Success -> {
-                val response = (analysisState.value as AnalysisState.Success).response
-                AnalysisContent(
-                    response = response
-                )
+                val successState = analysisState.value as AnalysisState.Success
+                val response = successState.response
+                val isOfflineCache = successState.isOfflineCache
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // Offline cache indicator
+                    if (isOfflineCache) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFFFA500))
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "📡 Offline Mode - Showing cached analysis",
+                                color = Color.Black,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                    AnalysisContent(
+                        response = response,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             is AnalysisState.Error -> {

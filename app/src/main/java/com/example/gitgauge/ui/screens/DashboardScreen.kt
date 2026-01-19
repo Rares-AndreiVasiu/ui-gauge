@@ -2,6 +2,7 @@ package com.example.gitgauge.ui.screens
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,9 +52,11 @@ fun DashboardScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     onRepositoryClick: (owner: String, repo: String) -> Unit = { _, _ -> },
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    onRefreshRepository: (owner: String, repo: String) -> Unit = { _, _ -> }
 ) {
     val repositories = viewModel.repositories.collectAsState()
+    val forceReanalysis by viewModel.forceReanalysis.collectAsState()
     val scrollState = rememberScrollState()
 
     Column(
@@ -164,7 +167,12 @@ fun DashboardScreen(
                             onClick = {
                                 onRepositoryClick(user.login, repo.name)
                             },
-                            hasCachedAnalysis = cachedAnalysisState.value
+                            hasCachedAnalysis = cachedAnalysisState.value,
+                            forceReanalysisEnabled = forceReanalysis,
+                            owner = user.login,
+                            onRefresh = { owner, repoName ->
+                                onRefreshRepository(owner, repoName)
+                            }
                         )
                     }
                 }
@@ -277,7 +285,10 @@ private fun RepositoryCard(
     repo: RepositoryItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    hasCachedAnalysis: Boolean = false
+    hasCachedAnalysis: Boolean = false,
+    forceReanalysisEnabled: Boolean = false,
+    owner: String = "",
+    onRefresh: (owner: String, repo: String) -> Unit = { _, _ -> }
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -343,12 +354,30 @@ private fun RepositoryCard(
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    text = "View Repository",
-                    fontSize = 12.sp,
-                    color = Color(0xFFf06bc7),
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (forceReanalysisEnabled) {
+                        androidx.compose.material3.IconButton(
+                            onClick = { onRefresh(owner, repo.name ?: "") },
+                            modifier = Modifier.height(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh Analysis",
+                                tint = Color(0xFFf06bc7),
+                                modifier = Modifier.padding(0.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = "View Repository",
+                        fontSize = 12.sp,
+                        color = Color(0xFFf06bc7),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

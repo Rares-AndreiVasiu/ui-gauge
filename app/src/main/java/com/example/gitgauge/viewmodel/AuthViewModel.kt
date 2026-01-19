@@ -26,12 +26,33 @@ class AuthViewModel @Inject constructor(
     private val _repositories = MutableStateFlow<List<RepositoryItem>>(emptyList())
     val repositories: StateFlow<List<RepositoryItem>> = _repositories.asStateFlow()
 
+    private val _forceReanalysis = MutableStateFlow(false)
+    val forceReanalysis: StateFlow<Boolean> = _forceReanalysis.asStateFlow()
+
     init {
         checkLoginStatus()
+        attemptSessionRestoration()
     }
 
     private fun checkLoginStatus() {
         _isLoggedIn.value = authRepository.isLoggedIn()
+    }
+
+    private fun attemptSessionRestoration() {
+        // Try to restore session from storage for offline use
+        viewModelScope.launch {
+            try {
+                val session = authRepository.restoreSessionFromStorage()
+                if (session != null) {
+                    val (token, user) = session
+                    _authState.value = AuthState.Success(user)
+                    _isLoggedIn.value = true
+                    loadRepositories()
+                }
+            } catch (e: Exception) {
+                // Silent fail - user will need to login if session restoration fails
+            }
+        }
     }
 
     fun startGithubLogin() {
@@ -73,10 +94,16 @@ class AuthViewModel @Inject constructor(
     }
 
     fun logout() {
-        authRepository.clearToken()
-        _isLoggedIn.value = false
-        _authState.value = AuthState.Idle
-        _repositories.value = emptyList()
+        viewModelScope.launch {
+            authRepository.logout()
+            _isLoggedIn.value = false
+            _authState.value = AuthState.Idle
+            _repositories.value = emptyList()
+        }
+    }
+
+    fun toggleForceReanalysis() {
+        _forceReanalysis.value = !_forceReanalysis.value
     }
 
     fun resetAuthState() {
