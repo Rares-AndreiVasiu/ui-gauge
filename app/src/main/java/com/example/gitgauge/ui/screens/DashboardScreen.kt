@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,6 +29,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,144 +52,187 @@ fun DashboardScreen(
     onSettingsClick: () -> Unit = {}
 ) {
     val repositories = viewModel.repositories.collectAsState()
+    val showBottomNav = remember { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
+    val previousScrollPosition = remember { mutableStateOf(0) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF13203b))
     ) {
-        // Top Navigation Bar with Logout and Settings
-        Row(
+        // Scrollable Content
+        Column(
             modifier = Modifier
+                .weight(1f)
+                .verticalScroll(scrollState)
                 .fillMaxWidth()
-                .background(Color(0xFF0f1621))
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Settings Button
-            IconButton(
-                onClick = onSettingsClick,
-                modifier = Modifier.padding(end = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = Color(0xFFf06bc7),
-                    modifier = Modifier
-                )
-            }
-
-            // Logout Button
-            Button(
-                onClick = onLogout,
-                modifier = Modifier
-                    .height(40.dp)
-                    .padding(end = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFDC3545)
-                )
-            ) {
-                Text(
-                    text = "Logout",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        // Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF0f1621))
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = "Welcome, ${user.login ?: "User"}!",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-                Text(
-                    text = user.name ?: "GitHub User",
-                    fontSize = 14.sp,
-                    color = Color.White
-                )
-            }
-        }
-
-        // User Info Card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                UserInfoRow("My public repositories", user.publicRepos.toString())
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2a4068))
-                UserInfoRow("Bio", user.bio ?: "No bio")
-            }
-        }
-
-        // Repositories Section
-        Text(
-            text = "Public Repositories (${repositories.value.size})",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-        )
-
-        if (repositories.value.isEmpty()) {
+            // Header - Will be hidden on scroll up
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .background(Color(0xFF0f1621))
+                    .padding(16.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    CircularProgressIndicator(
-                        color = Color(0xFFf06bc7),
-                        modifier = Modifier.padding(32.dp)
+                    Text(
+                        text = "Welcome, ${user.login ?: "User"}!",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
                     Text(
-                        text = "Loading repositories...",
-                        color = Color.White,
-                        fontSize = 14.sp
+                        text = user.name ?: "GitHub User",
+                        fontSize = 14.sp,
+                        color = Color.White
                     )
                 }
             }
-        } else {
-            LazyColumn(
+
+            // User Info Card
+            Card(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                items(repositories.value) { repo ->
-                    RepositoryCard(
-                        repo = repo,
-                        onClick = {
-                            // Navigate to analysis screen instead of GitHub
-                            onRepositoryClick(user.login, repo.name)
-                        }
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    UserInfoRow("My public repositories", user.publicRepos.toString())
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2a4068))
+                    UserInfoRow("Bio", user.bio ?: "No bio")
+                }
+            }
+
+            // Repositories Section
+            Text(
+                text = "Public Repositories (${repositories.value.size})",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+
+            if (repositories.value.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color(0xFFf06bc7),
+                            modifier = Modifier.padding(32.dp)
+                        )
+                        Text(
+                            text = "Loading repositories...",
+                            color = Color.White,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    repositories.value.forEach { repo ->
+                        RepositoryCard(
+                            repo = repo,
+                            onClick = {
+                                onRepositoryClick(user.login, repo.name)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+
+        // Bottom Navigation Bar - Darker color scheme
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0a121f))
+                .padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Settings Button
+                Button(
+                    onClick = onSettingsClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp)
+                        .padding(end = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2c3e50)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = Color(0xFFf06bc7),
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = "Settings",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Logout Button
+                Button(
+                    onClick = onLogout,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp)
+                        .padding(start = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF8B0000)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Logout",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
