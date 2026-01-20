@@ -6,6 +6,7 @@ import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.content.edit
 
 @Singleton
 class TokenManager @Inject constructor(@ApplicationContext private val context: Context) {
@@ -23,7 +24,7 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
     )
 
     fun saveAccessToken(token: String) {
-        encryptedSharedPreferences.edit().putString(KEY_ACCESS_TOKEN, token).apply()
+        encryptedSharedPreferences.edit { putString(KEY_ACCESS_TOKEN, token) }
     }
 
     fun getAccessToken(): String? {
@@ -31,7 +32,7 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     fun clearAccessToken() {
-        encryptedSharedPreferences.edit().remove(KEY_ACCESS_TOKEN).apply()
+        encryptedSharedPreferences.edit { remove(KEY_ACCESS_TOKEN) }
     }
 
     fun isTokenAvailable(): Boolean {
