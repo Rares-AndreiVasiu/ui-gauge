@@ -3,6 +3,7 @@ package com.example.gitgauge.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gitgauge.data.model.AnalysisResponse
+import com.example.gitgauge.data.repository.AnalysisCacheRepository
 import com.example.gitgauge.network.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AnalysisViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val cacheRepository: AnalysisCacheRepository
 ) : ViewModel() {
 
     private val _analysisState = MutableStateFlow<AnalysisState>(AnalysisState.Idle)
@@ -26,11 +28,32 @@ class AnalysisViewModel @Inject constructor(
         viewModelScope.launch {
             _analysisState.value = AnalysisState.Loading
             try {
+                // Check cache first if not forcing reanalysis
+                if (!forceReanalysis) {
+                    val cachedAnalysis = cacheRepository.getAnalysis(owner, repo, ref)
+                    if (cachedAnalysis != null) {
+                        // Use cached result and mark as offline
+                        _analysisResponse.value = cachedAnalysis
+                        _analysisState.value = AnalysisState.Success(cachedAnalysis, isOfflineCache = true)
+                        return@launch
+                    }
+                }
+
+                // If no cache or forcing reanalysis, call API
                 val response = authRepository.analyzeRepository(owner, repo, ref, forceReanalysis)
                 _analysisResponse.value = response
                 _analysisState.value = AnalysisState.Success(response, isOfflineCache = false)
             } catch (e: Exception) {
-                _analysisState.value = AnalysisState.Error(e.message ?: "Failed to analyze repository")
+                // If API call fails, check if we have cached data as fallback
+                val cachedAnalysis = cacheRepository.getAnalysis(owner, repo, ref)
+                if (cachedAnalysis != null) {
+                    // Use cached result and mark as offline
+                    _analysisResponse.value = cachedAnalysis
+                    _analysisState.value = AnalysisState.Success(cachedAnalysis, isOfflineCache = true)
+                } else {
+                    // No cache available, show error
+                    _analysisState.value = AnalysisState.Error(e.message ?: "Failed to analyze repository")
+                }
             }
         }
     }

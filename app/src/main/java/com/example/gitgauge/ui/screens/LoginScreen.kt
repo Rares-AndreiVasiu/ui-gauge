@@ -17,6 +17,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,17 @@ fun LoginScreen(
     modifier: Modifier = Modifier
 ) {
     val authState = viewModel.authState.collectAsState()
+    val isLoggedIn = viewModel.isLoggedIn.collectAsState()
+
+    // Check for existing session when screen is shown (for offline support)
+    // Only try once and wait a bit to see if session restoration from init completes
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(100) // Small delay to let init block complete
+        if (!isLoggedIn.value && authState.value is AuthState.Idle) {
+            // Try to restore session without requiring network
+            viewModel.attemptSessionRestoration()
+        }
+    }
 
     when (val state = authState.value) {
         is AuthState.WebViewLogin -> {
@@ -105,7 +117,10 @@ fun LoginScreen(
                     when (val state = authState.value) {
                         is AuthState.Idle -> {
                             LoginButton(
-                                onClick = { viewModel.startGithubLogin() },
+                                onClick = { 
+                                    // User explicitly wants to login, start new login flow
+                                    viewModel.startGithubLogin()
+                                },
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -165,7 +180,12 @@ fun LoginScreen(
                                 modifier = Modifier.padding(bottom = 24.dp)
                             )
                             LoginButton(
-                                onClick = { viewModel.resetAuthState() },
+                                onClick = { 
+                                    // Try to restore session first (for offline support)
+                                    viewModel.attemptSessionRestoration()
+                                    // If that doesn't work, reset state so user can try login again
+                                    viewModel.resetAuthState()
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 text = "Try Again"
                             )

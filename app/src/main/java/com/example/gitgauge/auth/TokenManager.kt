@@ -24,7 +24,8 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
     )
 
     fun saveAccessToken(token: String) {
-        encryptedSharedPreferences.edit { putString(KEY_ACCESS_TOKEN, token) }
+        // Use commit() for immediate persistence to ensure token is saved before proceeding
+        encryptedSharedPreferences.edit().putString(KEY_ACCESS_TOKEN, token).commit()
     }
 
     fun getAccessToken(): String? {
@@ -32,7 +33,8 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     fun clearAccessToken() {
-        encryptedSharedPreferences.edit { remove(KEY_ACCESS_TOKEN) }
+        // Use commit() for immediate persistence
+        encryptedSharedPreferences.edit().remove(KEY_ACCESS_TOKEN).commit()
     }
 
     fun isTokenAvailable(): Boolean {

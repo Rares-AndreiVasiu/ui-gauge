@@ -3,6 +3,7 @@ package com.example.gitgauge.di
 import android.content.Context
 import com.example.gitgauge.data.db.AnalysisCacheDao
 import com.example.gitgauge.data.db.GitgaugeDatabase
+import com.example.gitgauge.data.db.RepositoryDao
 import com.example.gitgauge.data.db.UserSessionDao
 import dagger.Module
 import dagger.Provides
@@ -37,5 +38,13 @@ object DatabaseModule {
         database: GitgaugeDatabase
     ): UserSessionDao {
         return database.userSessionDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepositoryDao(
+        database: GitgaugeDatabase
+    ): RepositoryDao {
+        return database.repositoryDao()
     }
 }
