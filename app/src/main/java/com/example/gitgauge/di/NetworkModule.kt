@@ -73,4 +73,10 @@ object NetworkModule {
     fun provideGitHubApiService(@GitHubRetrofit retrofit: Retrofit): GitHubApiService {
         return retrofit.create(GitHubApiService::class.java)
     }
+
+    @Singleton
+    @Provides
+    fun provideContext(application: android.app.Application): android.content.Context {
+        return application.applicationContext
+    }
 }

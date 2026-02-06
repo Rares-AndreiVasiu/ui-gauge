@@ -30,7 +30,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -215,32 +214,32 @@ private fun AnalysisContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Summary Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(20.dp)
             ) {
                 Text(
-                    text = "Summary",
-                    fontSize = 16.sp,
+                    text = "📋 Summary",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = Color(0xFFf06bc7),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 Text(
                     text = response.summary,
                     fontSize = 14.sp,
                     color = Color.White,
-                    lineHeight = 1.5.em
+                    lineHeight = 1.6.em
                 )
             }
         }
@@ -250,24 +249,24 @@ private fun AnalysisContent(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(20.dp)
             ) {
                 Text(
-                    text = "Repository Information",
-                    fontSize = 16.sp,
+                    text = "📁 Repository Information",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    color = Color(0xFFf06bc7),
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
-                InfoRow("Owner", response.repository.owner)
-                InfoRow("Repository", response.repository.repo)
-                InfoRow("Branch", response.repository.ref)
-                InfoRow("Files Analyzed", response.repository.filesAnalyzed.toString())
+                InfoRow("👤 Owner", response.repository.owner)
+                InfoRow("📦 Repository", response.repository.repo)
+                InfoRow("🌿 Branch", response.repository.ref)
+                InfoRow("📄 Files Analyzed", response.repository.filesAnalyzed.toString(), isLast = true)
             }
         }
 
@@ -276,19 +275,19 @@ private fun AnalysisContent(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1a2d47)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(20.dp)
             ) {
                 Text(
-                    text = "Detailed Analysis",
-                    fontSize = 16.sp,
+                    text = "🔍 Detailed Analysis",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    color = Color(0xFFf06bc7),
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
                 MarkdownText(
                     text = response.analysis,
@@ -302,28 +301,28 @@ private fun AnalysisContent(
 }
 
 @Composable
-private fun InfoRow(label: String, value: String) {
+private fun InfoRow(label: String, value: String, isLast: Boolean = false) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 12.dp)
     ) {
         Text(
             text = label,
-            fontSize = 12.sp,
-            color = Color.White,
+            fontSize = 13.sp,
+            color = Color(0xFFb0bfd9),
             fontWeight = FontWeight.SemiBold
         )
         Text(
             text = value,
-            fontSize = 14.sp,
+            fontSize = 15.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier.padding(top = 6.dp)
         )
-        if (label != "Files Analyzed") {
+        if (!isLast) {
             HorizontalDivider(
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 12.dp),
                 color = Color(0xFF2a4068),
                 thickness = 1.dp
             )
