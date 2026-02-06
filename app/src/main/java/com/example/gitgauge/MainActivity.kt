@@ -1,5 +1,6 @@
 package com.example.gitgauge
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +12,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.example.gitgauge.config.NotificationConfig
+import com.example.gitgauge.notification.NotificationChannelManager
+import com.example.gitgauge.service.NotificationBackgroundService
 import com.example.gitgauge.ui.screens.AnalysisScreen
 import com.example.gitgauge.ui.screens.DashboardScreen
 import com.example.gitgauge.ui.screens.LoginScreen
@@ -18,6 +22,7 @@ import com.example.gitgauge.ui.screens.SettingsScreen
 import com.example.gitgauge.ui.theme.GitgaugeTheme
 import com.example.gitgauge.viewmodel.AnalysisViewModel
 import com.example.gitgauge.viewmodel.AuthViewModel
+import com.example.gitgauge.viewmodel.NotificationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -26,9 +31,18 @@ class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
     private val analysisViewModel: AnalysisViewModel by viewModels()
+    private val notificationViewModel: NotificationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize notification channels
+        NotificationChannelManager.createNotificationChannels(this)
+
+        // Start background notification service
+        val serviceIntent = Intent(this, NotificationBackgroundService::class.java)
+        startService(serviceIntent)
+
         enableEdgeToEdge()
         setContent {
             GitgaugeTheme {
@@ -103,7 +117,14 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Disconnect from notification server when activity is destroyed
+        notificationViewModel.disconnectFromNotificationServer()
+    }
 }
+
 
 sealed class Screen {
     object Dashboard : Screen()

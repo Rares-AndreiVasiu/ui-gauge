@@ -5,8 +5,6 @@ import com.example.gitgauge.auth.TokenManager
 import com.example.gitgauge.data.model.GithubUser
 import com.example.gitgauge.data.model.RepositoryItem
 import com.example.gitgauge.data.repository.AnalysisCacheRepository
-import com.example.gitgauge.di.NetworkModule
-import com.example.gitgauge.network.GitHubApiService
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -16,10 +14,10 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val tokenManager: TokenManager,
     private val cacheRepository: AnalysisCacheRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val apiService: ApiService,
+    private val gitHubApiService: GitHubApiService
 ) {
-
-    private val apiService: ApiService = NetworkModule.getApiService()
 
     suspend fun initiateDeviceFlow(): com.example.gitgauge.network.DeviceFlowResponse {
         return try {
@@ -50,7 +48,6 @@ class AuthRepository @Inject constructor(
             
             tokenManager.saveAccessToken(token)
             
-            val gitHubApiService: GitHubApiService = NetworkModule.getGitHubApiService()
             val user = gitHubApiService.getCurrentUser("Bearer $token")
             
             // Persist session for offline use
