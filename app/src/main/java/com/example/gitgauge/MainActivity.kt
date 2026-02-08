@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
                                     viewModel = authViewModel,
                                     user = successState.user,
                                     onLogout = {
+                                        currentScreen.value = Screen.Dashboard
                                         authViewModel.logout()
                                     },
                                     modifier = Modifier.fillMaxSize(),
@@ -88,7 +89,9 @@ class MainActivity : ComponentActivity() {
                                         currentScreen.value = Screen.Dashboard
                                     },
                                     onLogout = {
+                                        currentScreen.value = Screen.Dashboard
                                         authViewModel.logout()
+                                        analysisViewModel.resetState()
                                     },
                                     modifier = Modifier.fillMaxSize()
                                 )

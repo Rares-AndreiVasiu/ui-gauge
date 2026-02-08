@@ -95,10 +95,19 @@ class AuthViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            authRepository.logout()
-            _isLoggedIn.value = false
-            _authState.value = AuthState.Idle
-            _repositories.value = emptyList()
+            try {
+                authRepository.logout()
+                _isLoggedIn.value = false
+                _authState.value = AuthState.Idle
+                _repositories.value = emptyList()
+                _forceReanalysis.value = false
+            } catch (e: Exception) {
+                // Log the error but still reset the UI state
+                _isLoggedIn.value = false
+                _authState.value = AuthState.Idle
+                _repositories.value = emptyList()
+                _forceReanalysis.value = false
+            }
         }
     }
 
